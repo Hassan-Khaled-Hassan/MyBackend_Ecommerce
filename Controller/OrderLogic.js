@@ -215,5 +215,5 @@ exports.createVisaOrder = asyncHandler(async (req, res,next) => {
 // ======================================
 exports.WebBack = asyncHandler(async (req, res,next) => {
   console.log(req.body);
-  res.status(200).json({ status: "success", data: req.body, result : res, new : req.query });
+  res.status(200).json({ status: "success", data: req.body,  new : req.query });
 })
