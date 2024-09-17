@@ -20,7 +20,9 @@ dotenv.config({ path: "config.env" });
 DBConnection();
 
 const app = express();
-
+app.get("/", (req, res) => {
+  res.send("it is running")
+})
 app.use(cors());
 app.options("*", cors());
 // compress all responses
@@ -56,3 +58,5 @@ process.on("unhandledRejection", (error) => {
     process.exit(1);
   });
 });
+
+
