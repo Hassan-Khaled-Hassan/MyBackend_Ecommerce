@@ -214,6 +214,18 @@ exports.createVisaOrder = asyncHandler(async (req, res,next) => {
 // ====================================
 // ======================================
 exports.WebBack = asyncHandler(async (req, res,next) => {
+      const paymentStatus = req.body.obj.success;
+      const {email} = req.body.obj.payment_key_claims.billing_data;
+      // eslint-disable-next-line camelcase
+      const plan_id = req.body.obj.payment_key_claims.billing_data.state;
+      console.log(paymentStatus, email, plan_id);
   console.log(req.body);
-  res.status(200).json({ status: "success", data: req.body,  new : req.query });
+  res
+    .status(200)
+    .json({
+      status: "success",
+      data: req.body,
+      new: req.query,
+      main: req.body.obj,
+    });
 })
