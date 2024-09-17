@@ -13,7 +13,7 @@ const { ProtectAuth, isAllowedTo } = require("../Controller/AuthLogic");
 
 const router = express.Router();
 // =============================
-router.post("/webBack", WebBack);
+router.get("/webBack", WebBack);
 
 router.use(ProtectAuth);
 router.post("/createVisaOrder/:cartId", createVisaOrder);
