@@ -220,29 +220,53 @@ exports.createVisaOrder = asyncHandler(async (req, res,next) => {
 // ====================================
 // ======================================
 exports.WebBack = asyncHandler(async (req, res,next) => {
+  // app settings
+  const taxPrice = 0;
+  const shippingPrice = 0;
+
   const paymentStatus = req.query.success;
 
   if (!paymentStatus || paymentStatus === "false") {
-    return res
-      .status(400)
-      .json({ value: "Declined" });
+    return res.status(400).json({ value: "Declined" });
   }
-   // eslint-disable-next-line no-use-before-define
-   const orderId = req.query.order; // or wherever Paymob sends the orderId in the callback
-   const cartId = cartData[orderId];
-     if (!cartId) {
-       return next(
-         new APIError(`No cart associated with the provided orderId`, 400)
-       );
-     }
-    const Cart = await CartModel.findById(cartId);
-    if (!Cart) {
-      return next(
-        new APIError(`There is no such cart with id: ${req.CartID}`, 404)
-      );
-    }
+  // eslint-disable-next-line no-use-before-define
+  const orderId = req.query.order; // or wherever Paymob sends the orderId in the callback
+  const cartId = cartData[orderId];
+  if (!cartId) {
+    return next(
+      new APIError(`No cart associated with the provided orderId`, 400)
+    );
+  }
+  const Cart = await CartModel.findById(cartId);
+  if (!Cart) {
+    return next(new APIError(`There is no such cart with id: ${cartId}`, 404));
+  }
+  // 2) Get order price depend on cart price "Check if coupon apply"
+  const cartPrice = Cart.TotalPriceWithDisc
+    ? Cart.TotalPriceWithDisc
+    : Cart.TotalCartPrice;
+  const TotalOrderPrice = cartPrice + taxPrice + shippingPrice;
+  // 3) Create order with default paymentMethodType cash
+  const Order = await OrderModel.create({
+    UserID: Cart.UserID,
+    CartItems: Cart.CartItems,
+    TotalOrderPrice,
+    PaymentMethod: "card",
+  });
 
+  // 4) After creating order, decrement product quantity, increment product sold
+  if (Order) {
+    const bulkOption = Cart.CartItems.map((item) => ({
+      updateOne: {
+        filter: { _id: item.ProductID },
+        update: { $inc: { quantity: -item.Quantity, soldNum: +item.Quantity } },
+      },
+    }));
+    await ProductModel.bulkWrite(bulkOption, {}); // bulkWrite : allow us to make more than one action to mongo db
 
+    // 5) Clear cart depend on cartId
+    await CartModel.findByIdAndDelete(cartId);
+  }
   res.status(200).json({
     status: "success",
     data: req.body,
