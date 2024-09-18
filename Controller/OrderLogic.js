@@ -113,6 +113,9 @@ exports.createVisaOrder = asyncHandler(async (req, res,next) => {
   const taxPrice = 0;
   const shippingPrice = 0;
   // 1) Get cart depend on cartId
+  // ================
+  req.CartID = req.params.cartId;
+  // =================
   const Cart = await CartModel.findById(req.params.cartId);
   if (!Cart) {
     return next(
@@ -214,21 +217,27 @@ exports.createVisaOrder = asyncHandler(async (req, res,next) => {
 // ====================================
 // ======================================
 exports.WebBack = asyncHandler(async (req, res,next) => {
-  const paymentStatus = req.body.obj;
-  // const {email} = req.body.obj.payment_key_claims.billing_data;
-  // eslint-disable-next-line camelcase
-  // const plan_id = req.body.obj.payment_key_claims.billing_data.state;
-  // console.log(paymentStatus, email, plan_id);
+  const paymentStatus = req.query.success;
 
-  // if (!paymentStatus || paymentStatus === 0) {
-  //   return res
-  //     .status(400)
-  //     .json({ value: "Declined", paymentStatus: paymentStatus });
-  // }
+  if (!paymentStatus || paymentStatus === "false") {
+    return res
+      .status(400)
+      .json({ value: "Declined" });
+  }
+    const Cart = await CartModel.findById(req.CartID);
+    if (!Cart) {
+      return next(
+        new APIError(`There is no such cart with id: ${req.CartID}`, 404)
+      );
+    }
+
+
   res.status(200).json({
     status: "success",
     data: req.body,
-    new: req.query,
-    main: paymentStatus,
+    new: req.query.success,
+    main: req.CartID,
+    main2: paymentStatus,
+    main3: Cart,
   });
 })
