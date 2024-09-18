@@ -214,23 +214,21 @@ exports.createVisaOrder = asyncHandler(async (req, res,next) => {
 // ====================================
 // ======================================
 exports.WebBack = asyncHandler(async (req, res,next) => {
-  const paymentStatus = req.body.obj.success;
+  const paymentStatus = req.body.obj;
   const {email} = req.body.obj.payment_key_claims.billing_data;
   // eslint-disable-next-line camelcase
   const plan_id = req.body.obj.payment_key_claims.billing_data.state;
   console.log(paymentStatus, email, plan_id);
 
-  if (!paymentStatus || paymentStatus === 0) {
-    return res
-      .status(400)
-      .json({ value: "Declined", paymentStatus: paymentStatus });
-  }
-  res
-    .status(200)
-    .json({
-      status: "success",
-      data: req.body,
-      new: req.query,
-      main: req.body.obj,
-    });
+  // if (!paymentStatus || paymentStatus === 0) {
+  //   return res
+  //     .status(400)
+  //     .json({ value: "Declined", paymentStatus: paymentStatus });
+  // }
+  res.status(200).json({
+    status: "success",
+    data: req.body,
+    new: req.query,
+    main: paymentStatus,
+  });
 })
