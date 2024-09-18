@@ -8,6 +8,8 @@ const APIError = require("../Utils/apiError");
 const CartModel = require("../Models/CartModel");
 const ProductModel = require("../Models/ProductModel");
 
+let cartData = {}; // Global variable to store cart data
+
 exports.createCashOrder = asyncHandler(async (req, res, next) => {
   // app settings
   const taxPrice = 0;
@@ -114,7 +116,8 @@ exports.createVisaOrder = asyncHandler(async (req, res,next) => {
   const shippingPrice = 0;
   // 1) Get cart depend on cartId
   // ================
-  req.CartID = req.params.cartId;
+  const {cartId} = req.params;
+  cartData[cartId] = cartId;
   // =================
   const Cart = await CartModel.findById(req.params.cartId);
   if (!Cart) {
@@ -224,7 +227,9 @@ exports.WebBack = asyncHandler(async (req, res,next) => {
       .status(400)
       .json({ value: "Declined" });
   }
-    const Cart = await CartModel.findById(req.CartID);
+   // eslint-disable-next-line no-use-before-define
+   const cartId = cartData[cartId];
+    const Cart = await CartModel.findById(cartId);
     if (!Cart) {
       return next(
         new APIError(`There is no such cart with id: ${req.CartID}`, 404)
