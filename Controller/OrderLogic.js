@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 /* eslint-disable prefer-template */
 /* eslint-disable import/no-extraneous-dependencies */
 const asyncHandler = require("express-async-handler");
