@@ -116,9 +116,6 @@ exports.createVisaOrder = asyncHandler(async (req, res,next) => {
   const taxPrice = 0;
   const shippingPrice = 0;
   // 1) Get cart depend on cartId
-  // ================
-  const {cartId} = req.params;
-  cartData[cartId] = cartId;
   // =================
   const Cart = await CartModel.findById(req.params.cartId);
   if (!Cart) {
@@ -167,6 +164,8 @@ exports.createVisaOrder = asyncHandler(async (req, res,next) => {
       }
     );
     const orderId = orderResponse.data.id;
+    // Store the cartId associated with this orderId
+    cartData[orderId] = req.params.cartId;
     console.log("order  :  " + orderId);
     // ===========================================
     const paymentKeyResponse = await axios.post(
@@ -193,7 +192,7 @@ exports.createVisaOrder = asyncHandler(async (req, res,next) => {
         },
         currency: process.env.CURRENCY,
         integration_id: process.env.INTEGRATION_ID,
-      },
+      }
     );
     const paymentKey = paymentKeyResponse.data.token;
     // ===========================================
@@ -229,7 +228,13 @@ exports.WebBack = asyncHandler(async (req, res,next) => {
       .json({ value: "Declined" });
   }
    // eslint-disable-next-line no-use-before-define
-   const cartId = cartData[cartId];
+   const orderId = req.query.order; // or wherever Paymob sends the orderId in the callback
+   const cartId = cartData[orderId];
+     if (!cartId) {
+       return next(
+         new APIError(`No cart associated with the provided orderId`, 400)
+       );
+     }
     const Cart = await CartModel.findById(cartId);
     if (!Cart) {
       return next(
