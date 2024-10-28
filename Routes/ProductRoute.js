@@ -15,15 +15,20 @@ const {
   deleteProductValidator,
   updateProductValidator,
 } = require("../Validators/ProductValidator");
-const { ProtectAuth, isAllowedTo } = require("../Controller/AuthLogic");
+
 const ReviewRoute = require("./ReviewRoute");
 
 const router = express.Router();
 
-router.use("/:ProductID", ReviewRoute);
+console.log("my api test")
+router.use("/:ProductID/reviews", ReviewRoute);
 // =============================
 //Router.route("/").get(CategoryLogic).post(CreateCategories);
 // =============================
+router.get("/AllProducts", getProducts);
+
+ const { ProtectAuth, isAllowedTo } = require("../Controller/AuthLogic");
+
 router.post(
   "/createProduct",
   ProtectAuth,
@@ -33,7 +38,6 @@ router.post(
   createProductValidator,
   createProduct
 );
-router.get("/AllProducts", getProducts);
 router.get("/Specific-Product/:id", getProductValidator, getProduct);
 router.put(
   "/Edit-Product/:id",
@@ -53,3 +57,5 @@ router.delete(
 );
 
 module.exports = router;
+
+
